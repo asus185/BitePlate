@@ -1,125 +1,213 @@
 @startuml
 title BitePlate - Core System Class Diagram
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
 
-abstract class MenuItem {
-  - item_id: String
-  - name: String
-  - base_price: float
-  - description: String
-  - allergens: List<String>
-  - available: boolean
-  + get_price(): float
+package "Menu" {
+  abstract class MenuItem {
+    - item_id: String
+    - name: String
+    - base_price: float
+    - description: String
+    - allergens: List<String>
+    - available: boolean
+    + get_price(): float {abstract}
+    + add_allergen(allergen: String)
+    + is_available(): boolean
+  }
+
+  class Starter {
+    - portion_size: String
+    + get_price(): float
+  }
+
+  class MainCourse {
+    - spiciness: int
+    + get_price(): float
+  }
+
+  class Dessert {
+    - is_seasonal: boolean
+    + get_price(): float
+  }
+
+  class Beverage {
+    - size: String
+    - is_alcoholic: boolean
+    + get_price(): float
+  }
+
+  class ComboMeal {
+    - combo_id: String
+    - name: String
+    - discount_percent: float
+    - items: List<MenuItem>
+    + add_item(item: MenuItem)
+    + remove_item(item_id: String): boolean
+    + get_total_price(): float
+  }
+
+  MenuItem <|-- Starter : Generalisation
+  MenuItem <|-- MainCourse : Generalisation
+  MenuItem <|-- Dessert : Generalisation
+  MenuItem <|-- Beverage : Generalisation
+  ComboMeal "1" o-- "0..*" MenuItem : Aggregation
 }
 
-class Starter {
-  - portion_size: String
-  + get_price(): float
+package "Orders" {
+  class Order {
+    - order_id: String
+    - table_number: int
+    - waiter_id: String
+    - items: List<OrderItem>
+    - status: OrderStatus
+    - created_at: DateTime
+    - updated_at: DateTime
+    - notes: String
+    + add_item(menu_item: MenuItem, qty: int)
+    + remove_item(index: int): boolean
+    + get_total(): float
+    + can_modify(): boolean
+  }
+
+  class OrderItem {
+    - menu_item: MenuItem
+    - quantity: int
+    - customizations: Dict
+    + get_total_price(): float
+  }
+
+  class OrderHistoryLog <<singleton>> {
+    - _instance: OrderHistoryLog
+    - _logs: List<Dict>
+    - _initialized: boolean
+    + add_order(id, table, staff, items, total)
+    + get_all_orders(): List<Dict>
+    + get_orders_by_date_range(start, end): List<Dict>
+    + get_orders_by_table(table_num): List<Dict>
+    + get_most_frequent_item(): String
+    + get_total_revenue(): float
+    + get_peak_hours(): Dict
+  }
+
+  Order "1" *-- "1..*" OrderItem : Composition
+  OrderItem ..> MenuItem : Dependency
+  Order ..> OrderHistoryLog : Dependency
 }
 
-class MainCourse {
-  - spiciness: int
-  + get_price(): float
+package "Restaurant" {
+  class Table {
+    - table_number: int
+    - capacity: int
+    - location: String
+    - status: TableStatus
+    - current_order_id: String
+    - reservation_id: String
+    + occupy(order_id: String): boolean
+    + reserve(reservation_id: String): boolean
+    + await_bill(): boolean
+    + clear(): boolean
+    + free_up(): boolean
+  }
+
+  class Reservation {
+    - reservation_id: String
+    - customer_name: String
+    - phone: String
+    - table_number: int
+    - date: DateTime
+    - party_size: int
+    - special_requests: String
+    - confirmed: boolean
+    + confirm()
+    + cancel()
+  }
+
+  Table "1" o-- "0..1" Reservation : Aggregation
+  Table "1" --> "0..1" Order : Association
 }
 
-class Dessert {
-  - is_seasonal: boolean
-  + get_price(): float
+package "Staff" {
+  abstract class Staff {
+    # staff_id: String
+    # username: String
+    # password: String
+    # name: String
+    # role: Role
+    # permissions: Dict
+    + authenticate(password: String): boolean
+    + check_permission(perm: String): boolean
+    + get_dashboard_view(): String {abstract}
+  }
+
+  class Manager {
+    + get_dashboard_view(): String
+  }
+
+  class HeadChef {
+    + get_dashboard_view(): String
+  }
+
+  class Waiter {
+    + get_dashboard_view(): String
+  }
+
+  class Cashier {
+    + get_dashboard_view(): String
+  }
+
+  Staff <|-- Manager : Generalisation
+  Staff <|-- HeadChef : Generalisation
+  Staff <|-- Waiter : Generalisation
+  Staff <|-- Cashier : Generalisation
 }
 
-class Beverage {
-  - size: String
-  - is_alcoholic: boolean
-  + get_price(): float
+package "Billing" {
+  class Bill {
+    - bill_id: String
+    - order_id: String
+    - table_number: int
+    - line_items: List<BillLineItem>
+    - subtotal: float
+    - tax: float
+    - tip: float
+    - discount: float
+    - total: float
+    - paid: boolean
+    - payment_method: String
+    + add_item(name, qty, price)
+    + set_tip(tip: float)
+    + set_discount(discount: float)
+    + mark_paid(method: String)
+    + split_bill(num_people: int): float
+    + generate_receipt(): String
+  }
+
+  class BillLineItem {
+    - item_name: String
+    - quantity: int
+    - unit_price: float
+    - total_price: float
+  }
+
+  Bill "1" *-- "1..*" BillLineItem : Composition
+  Bill ..> Order : Dependency
 }
 
-MenuItem <|-- Starter
-MenuItem <|-- MainCourse
-MenuItem <|-- Dessert
-MenuItem <|-- Beverage
+note right of OrderHistoryLog
+  <<singleton>> stereotype
+  Only one instance exists
+  Global access point
+end note
 
-class ComboMeal {
-  - combo_id: String
-  - name: String
-  - items: List<MenuItem>
-  - discount_percent: float
-  + get_total_price(): float
-}
+note bottom of MenuItem
+  Abstract class (ABC)
+  get_price() is abstract
+end note
 
-MenuItem "1" -- "0..*" ComboMeal : contains
-
-class Order {
-  - order_id: String
-  - table_number: int
-  - status: OrderStatus
-  - items: List<OrderItem>
-  + get_total(): float
-  + can_modify(): boolean
-}
-
-class OrderItem {
-  - menu_item: MenuItem
-  - quantity: int
-  + get_total_price(): float
-}
-
-Order "1" *-- "1..*" OrderItem : contains
-OrderItem "1" --> "1" MenuItem : references
-
-class Table {
-  - table_number: int
-  - capacity: int
-  - status: TableStatus
-  + occupy(): boolean
-  + reserve(): boolean
-  + clear(): boolean
-}
-
-Table "1" --> "0..*" Order : has
-
-abstract class Staff {
-  - staff_id: String
-  - username: String
-  - role: Role
-  + check_permission(): boolean
-  + authenticate(): boolean
-}
-
-class Manager
-class HeadChef
-class Waiter
-class Cashier
-
-Staff <|-- Manager
-Staff <|-- HeadChef
-Staff <|-- Waiter
-Staff <|-- Cashier
-
-class Bill {
-  - bill_id: String
-  - line_items: List<BillLineItem>
-  - subtotal: float
-  - tax: float
-  - total: float
-  + generate_receipt(): String
-  + split_bill(): float
-}
-
-class BillLineItem {
-  - item_name: String
-  - quantity: int
-  - unit_price: float
-  - total_price: float
-}
-
-Bill "1" *-- "1..*" BillLineItem : contains
-
-class "OrderHistoryLog" as Log {
-  - logs: List<Dict>
-  + add_order(): void
-  + get_orders_by_date_range(): List
-  + get_most_frequent_item(): String
-}
-
-note right of Log : Singleton Pattern
-
+note bottom of Staff
+  Abstract class (ABC)
+  get_dashboard_view() is abstract
+  # = protected visibility
+end note
 @enduml
