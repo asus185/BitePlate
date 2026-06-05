@@ -1,0 +1,56 @@
+@startuml
+title BitePlate - Observer Pattern Sequence Diagram
+autonumber
+
+participant "OrderService" as orderSvc
+participant "OrderSubject" as subject
+participant "WaiterNotifier" as waiter
+participant "ManagerDashboard" as manager
+participant "KitchenDisplay" as kitchen
+participant "AllergyAlert" as allergy
+
+== Observer Registration ==
+orderSvc -> subject : attach(WaiterNotifier)
+orderSvc -> subject : attach(ManagerDashboard)
+orderSvc -> subject : attach(KitchenDisplay)
+orderSvc -> subject : attach(AllergyAlert)
+
+note right: All observers registered\nwhen order is created
+
+== Status Change Triggers Notification ==
+orderSvc -> subject : set_status(CONFIRMED)
+subject -> subject : notify()
+
+subject -> waiter : update(subject)
+waiter --> waiter : Store notification:\n"Waiter W001: Order ORD-0001\nstatus changed to CONFIRMED"
+
+subject -> manager : update(subject)
+manager --> manager : Store alert:\n"ALERT: Order ORD-0001 |\nTable 5 | Status: CONFIRMED"
+
+subject -> kitchen : update(subject)
+kitchen --> kitchen : Store order info:\n{order_id, table, status, items}
+
+subject -> allergy : update(subject)
+allergy --> allergy : Check allergens:\nIf contains allergens → ALLERGY ALERT
+
+== Query Notifications ==
+orderSvc -> waiter : getNotifications()
+waiter --> orderSvc : ["Waiter W001: Order ORD-0001..."]
+
+orderSvc -> manager : getAlerts()
+manager --> orderSvc : ["ALERT: Order ORD-0001..."]
+
+orderSvc -> kitchen : getOrders()
+kitchen --> orderSvc : [{order_id, table, status, items}]
+
+orderSvc -> allergy : getAlerts()
+allergy --> orderSvc : [] (no allergens found)
+
+note right
+  Observer Pattern Benefits:
+  • Loose coupling
+  • Open/Closed Principle
+  • Real-time updates
+  • Easy to add new observers
+end note
+@enduml

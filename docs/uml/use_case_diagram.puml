@@ -1,0 +1,89 @@
+@startuml
+title BitePlate - Smart Restaurant Management System
+skinparam packageStyle rectangle
+skinparam usecasestyle roundcorner
+
+left to right direction
+
+actor "Customer" as customer
+actor "Waiter" as waiter
+actor "Head Chef" as chef
+actor "Cashier" as cashier
+actor "Manager" as manager
+
+rectangle "BitePlate System" {
+
+  usecase "Make Reservation" as UC1
+  usecase "Seat Customer" as UC2
+  usecase "View Tables" as UC3
+  usecase "Take Order" as UC4
+  usecase "Modify/Cancel Order" as UC5
+  usecase "Confirm Order" as UC6
+  usecase "View Kitchen Queue" as UC7
+  usecase "Process Order" as UC8
+  usecase "Undo Action" as UC9
+  usecase "Generate Bill" as UC10
+  usecase "Apply Discount" as UC11
+  usecase "Split Bill" as UC12
+  usecase "Process Payment" as UC13
+  usecase "View Order History" as UC14
+  usecase "View Analytics" as UC15
+  usecase "Manage Staff" as UC16
+  usecase "Receive Alerts" as UC17
+
+  customer --> UC1
+  customer --> UC13
+
+  waiter --> UC2
+  waiter --> UC3
+  waiter --> UC4
+  waiter --> UC5
+  waiter --> UC6
+  waiter --> UC7
+  waiter --> UC17
+
+  chef --> UC7
+  chef --> UC8
+  chef --> UC9
+  chef --> UC17
+
+  cashier --> UC3
+  cashier --> UC10
+  cashier --> UC11
+  cashier --> UC12
+  cashier --> UC13
+
+  manager --> UC7
+  manager --> UC14
+  manager --> UC15
+  manager --> UC16
+  manager --> UC17
+
+  UC4 ..> UC3 : <<include>>
+  UC6 ..> UC4 : <<include>>
+  UC10 ..> UC11 : <<include>>
+  UC13 ..> UC10 : <<include>>
+  UC15 ..> UC14 : <<include>>
+  UC8 ..> UC9 : <<extend>>
+}
+
+note bottom of UC11
+  Strategy Pattern:
+  Runtime pricing swap
+end note
+
+note bottom of UC8
+  Command Pattern:
+  Execute + Undo
+end note
+
+note bottom of UC17
+  Observer Pattern:
+  Real-time notifications
+end note
+
+note bottom of UC14
+  Singleton Pattern:
+  Single history log
+end note
+@enduml
