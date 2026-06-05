@@ -1,0 +1,23 @@
+@startuml
+title Singleton Pattern - Order History Log
+
+class OrderHistoryLog {
+  - _instance: OrderHistoryLog
+  - logs: List<Dict>
+  + {static} getInstance(): OrderHistoryLog
+  + add_order()
+  + get_all_orders(): List
+  + get_orders_by_date_range(): List
+  + get_orders_by_table(): List
+  + get_most_frequent_item(): String
+  + get_total_revenue(): float
+  + get_peak_hours(): Dict
+}
+
+note right of OrderHistoryLog 
+  Singleton Pattern
+  Only one instance exists
+  throughout the application
+end note
+
+@enduml

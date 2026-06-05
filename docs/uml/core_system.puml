@@ -1,0 +1,125 @@
+@startuml
+title BitePlate - Core System Class Diagram
+
+abstract class MenuItem {
+  - item_id: String
+  - name: String
+  - base_price: float
+  - description: String
+  - allergens: List<String>
+  - available: boolean
+  + get_price(): float
+}
+
+class Starter {
+  - portion_size: String
+  + get_price(): float
+}
+
+class MainCourse {
+  - spiciness: int
+  + get_price(): float
+}
+
+class Dessert {
+  - is_seasonal: boolean
+  + get_price(): float
+}
+
+class Beverage {
+  - size: String
+  - is_alcoholic: boolean
+  + get_price(): float
+}
+
+MenuItem <|-- Starter
+MenuItem <|-- MainCourse
+MenuItem <|-- Dessert
+MenuItem <|-- Beverage
+
+class ComboMeal {
+  - combo_id: String
+  - name: String
+  - items: List<MenuItem>
+  - discount_percent: float
+  + get_total_price(): float
+}
+
+MenuItem "1" -- "0..*" ComboMeal : contains
+
+class Order {
+  - order_id: String
+  - table_number: int
+  - status: OrderStatus
+  - items: List<OrderItem>
+  + get_total(): float
+  + can_modify(): boolean
+}
+
+class OrderItem {
+  - menu_item: MenuItem
+  - quantity: int
+  + get_total_price(): float
+}
+
+Order "1" *-- "1..*" OrderItem : contains
+OrderItem "1" --> "1" MenuItem : references
+
+class Table {
+  - table_number: int
+  - capacity: int
+  - status: TableStatus
+  + occupy(): boolean
+  + reserve(): boolean
+  + clear(): boolean
+}
+
+Table "1" --> "0..*" Order : has
+
+abstract class Staff {
+  - staff_id: String
+  - username: String
+  - role: Role
+  + check_permission(): boolean
+  + authenticate(): boolean
+}
+
+class Manager
+class HeadChef
+class Waiter
+class Cashier
+
+Staff <|-- Manager
+Staff <|-- HeadChef
+Staff <|-- Waiter
+Staff <|-- Cashier
+
+class Bill {
+  - bill_id: String
+  - line_items: List<BillLineItem>
+  - subtotal: float
+  - tax: float
+  - total: float
+  + generate_receipt(): String
+  + split_bill(): float
+}
+
+class BillLineItem {
+  - item_name: String
+  - quantity: int
+  - unit_price: float
+  - total_price: float
+}
+
+Bill "1" *-- "1..*" BillLineItem : contains
+
+class "OrderHistoryLog" as Log {
+  - logs: List<Dict>
+  + add_order(): void
+  + get_orders_by_date_range(): List
+  + get_most_frequent_item(): String
+}
+
+note right of Log : Singleton Pattern
+
+@enduml

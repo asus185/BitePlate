@@ -1,0 +1,1 @@
+# BitePlate - Design Patterns package

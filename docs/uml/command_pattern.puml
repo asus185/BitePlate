@@ -1,0 +1,51 @@
+@startuml
+title Command Pattern - Kitchen Queue
+
+interface Command {
+  + execute()
+  + undo()
+}
+
+class PrepareOrderCommand {
+  - order: Order
+  - previous_status: String
+  + execute()
+  + undo()
+}
+
+class CancelOrderCommand {
+  - order: Order
+  - previous_status: String
+  + execute()
+  + undo()
+}
+
+class CompleteOrderCommand {
+  - order: Order
+  - previous_status: String
+  + execute()
+  + undo()
+}
+
+class KitchenQueue {
+  - queue: List<Command>
+  - history: List<Command>
+  + add_command()
+  + execute_next()
+  + undo_last()
+}
+
+Command <|.. PrepareOrderCommand
+Command <|.. CancelOrderCommand
+Command <|.. CompleteOrderCommand
+
+KitchenQueue "1" --> "0..*" Command : invokes
+PrepareOrderCommand --> Order : modifies
+CancelOrderCommand --> Order : modifies
+CompleteOrderCommand --> Order : modifies
+
+note right of KitchenQueue : Invoker
+note right of Command : Command Interface
+note right of PrepareOrderCommand : ConcreteCommand
+
+@enduml
