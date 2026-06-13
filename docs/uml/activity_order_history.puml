@@ -1,0 +1,43 @@
+@startuml
+title Activity Diagram - Order History Recording & Query
+
+|System|
+start
+:Order confirmed;
+
+|Singleton|
+:Get OrderHistoryLog instance;
+:Add order to log with:
+  - Order ID
+  - Table number
+  - Staff ID
+  - Items
+  - Total
+  - Timestamp;
+
+|Manager|
+:Request report;
+
+|System|
+:Access Singleton OrderHistoryLog;
+
+note right
+  Singleton ensures
+  single access point
+end note
+
+|System|
+:Query logs by date range;
+:Calculate analytics;
+  - Top 10 dishes
+  - Average spend
+  - Peak hours;
+
+|Iterator|
+:Traverse records;
+
+|Manager|
+:View dashboard;
+
+stop
+@enduml

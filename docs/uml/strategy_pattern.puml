@@ -1,0 +1,40 @@
+@startuml
+title Strategy Pattern - Pricing Engine
+
+interface PricingStrategy {
+  + calculate_total(order): float
+  + get_strategy_name(): String
+}
+
+class StandardPricing {
+  + calculate_total(): float
+  + get_strategy_name(): String
+}
+
+class HappyHourPricing {
+  - DISCOUNT: float = 0.20
+  + calculate_total(): float
+  + get_strategy_name(): String
+}
+
+class LoyaltyCardPricing {
+  - DISCOUNT: float = 0.10
+  + calculate_total(): float
+  + get_strategy_name(): String
+}
+
+class PricingEngine {
+  - strategy: PricingStrategy
+  + calculate_total(): float
+  + set_strategy()
+}
+
+PricingStrategy <|.. StandardPricing
+PricingStrategy <|.. HappyHourPricing
+PricingStrategy <|.. LoyaltyCardPricing
+
+PricingEngine "1" --> "1" PricingStrategy : uses
+
+note right of PricingEngine : Context - swaps strategies at runtime
+
+@enduml

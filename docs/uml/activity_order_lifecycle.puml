@@ -1,0 +1,46 @@
+@startuml
+title Activity Diagram - Full Order Lifecycle
+
+|Customer|
+start
+:Be seated at table;
+
+|Waiter|
+:Take order;
+:Add items to order;
+
+|System|
+:Create Order;
+:Send to Kitchen Queue;
+
+|Kitchen|
+:Receive order;
+:Start preparation;
+:Mark as Ready;
+
+|Waiter|
+:Serve food to customer;
+
+|Customer|
+:Finish meal;
+:Request bill;
+
+|Waiter|
+:Request bill generation;
+
+|System|
+:Generate Bill;
+:Apply pricing strategy;
+:Calculate tax and total;
+
+|Cashier|
+:Present bill to customer;
+:Receive payment;
+:Mark bill as paid;
+
+|System|
+:Log order to history;
+:Clear table;
+
+stop
+@enduml

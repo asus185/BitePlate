@@ -1,0 +1,50 @@
+@startuml
+title Observer Pattern - Order Notifications
+
+interface Subject {
+  + attach(observer: Observer)
+  + detach(observer: Observer)
+  + notify()
+}
+
+interface Observer {
+  + update(subject)
+}
+
+class OrderSubject {
+  - order: Order
+  - observers: List<Observer>
+  + set_status()
+  + notify()
+}
+
+class WaiterNotifier {
+  - waiter_id: String
+  - notifications: List<String>
+  + update()
+}
+
+class ManagerDashboard {
+  - alerts: List<String>
+  + update()
+}
+
+class KitchenDisplay {
+  - orders: List<Dict>
+  + update()
+}
+
+class AllergyAlert {
+  - alerts: List<String>
+  + update()
+}
+
+Subject <|.. OrderSubject
+Observer <|.. WaiterNotifier
+Observer <|.. ManagerDashboard
+Observer <|.. KitchenDisplay
+Observer <|.. AllergyAlert
+
+OrderSubject "1" --> "0..*" Observer : notifies
+
+@enduml
