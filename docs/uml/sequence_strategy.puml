@@ -1,0 +1,53 @@
+@startuml
+title BitePlate - Strategy Pattern Sequence Diagram
+autonumber
+
+participant "Cashier" as cashier
+participant "BillingService" as billSvc
+participant "PricingEngine" as engine
+participant "StandardPricing" as standard
+participant "HappyHourPricing" as happyHour
+participant "LoyaltyCardPricing" as loyalty
+participant "Bill" as bill
+
+== Bill Creation ==
+cashier -> billSvc : createBill(order)
+billSvc -> bill : new Bill("BILL-0001", ...)
+billSvc -> bill : addLineItems(Steak x2, Wine x1)
+bill --> billSvc : subtotal = $62.97
+billSvc --> cashier : Bill created
+
+== Strategy Selection ==
+cashier -> engine : setStrategy(HappyHourPricing)
+engine --> engine : _strategy = HappyHourPricing
+
+cashier -> billSvc : calculateTotal("BILL-0001")
+billSvc -> engine : calculateTotal(bill)
+engine -> happyHour : calculateTotal(bill)
+happyHour -> bill : get subtotal ($62.97)
+bill --> happyHour : $62.97
+happyHour --> engine : $50.38 (20% off)
+engine --> billSvc : $50.38
+billSvc --> cashier : Discounted total: $50.38
+
+== Strategy Swap at Runtime ==
+cashier -> engine : setStrategy(LoyaltyCardPricing)
+engine --> engine : _strategy = LoyaltyCardPricing
+
+cashier -> billSvc : calculateTotal("BILL-0001")
+billSvc -> engine : calculateTotal(bill)
+engine -> loyalty : calculateTotal(bill)
+loyalty -> bill : get subtotal ($62.97)
+bill --> loyalty : $62.97
+loyalty --> engine : $56.67 (10% off)
+engine --> billSvc : $56.67
+billSvc --> cashier : Loyalty total: $56.67
+
+note right
+  Strategy Pattern Benefits:
+  • Runtime strategy swap
+  • Open/Closed Principle
+  • No if/else chains
+  • Each strategy independently testable
+end note
+@enduml

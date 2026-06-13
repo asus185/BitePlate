@@ -1,0 +1,51 @@
+@startuml
+title BitePlate - Command Pattern Sequence Diagram
+autonumber
+
+participant "Waiter" as waiter
+participant "KitchenService" as kitchenSvc
+participant "KitchenQueue" as queue
+participant "PrepareOrderCommand" as prepareCmd
+participant "CancelOrderCommand" as cancelCmd
+participant "Order" as order
+
+== Adding Commands to Queue ==
+waiter -> kitchenSvc : addOrderToQueue(order)
+kitchenSvc -> prepareCmd : new PrepareOrderCommand(order)
+kitchenSvc -> queue : addCommand(prepareCmd)
+queue --> queue : _queue.append(prepareCmd)
+
+waiter -> kitchenSvc : addOrderToQueue(order2)
+kitchenSvc -> prepareCmd : new PrepareOrderCommand(order2)
+kitchenSvc -> queue : addCommand(prepareCmd)
+queue --> queue : _queue.append(prepareCmd)
+
+== Executing Commands ==
+waiter -> kitchenSvc : processNext()
+kitchenSvc -> queue : executeNext()
+queue -> queue : cmd = _queue.pop(0)
+queue -> prepareCmd : execute()
+prepareCmd -> order : status = PREPARING
+prepareCmd --> queue : executed
+queue -> queue : _history.append(cmd)
+queue --> kitchenSvc : done
+kitchenSvc --> waiter : Order #1 preparing
+
+== Undo Last Command ==
+waiter -> kitchenSvc : undoLast()
+kitchenSvc -> queue : undoLast()
+queue -> queue : cmd = _history.pop()
+queue -> prepareCmd : undo()
+prepareCmd -> order : status = previous_status (PENDING)
+prepareCmd --> queue : undone
+queue --> kitchenSvc : done
+kitchenSvc --> waiter : Order #1 reverted to PENDING
+
+note right
+  Command Pattern Benefits:
+  • Execute/Undo support
+  • Command history
+  • Decoupled invoker/receiver
+  • Extensible (new commands)
+end note
+@enduml

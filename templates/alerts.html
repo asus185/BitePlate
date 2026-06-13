@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BitePlate - Alerts</title>
+    {% load static %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        .sidebar { position: fixed; top: 0; left: 0; width: 260px; height: 100vh; background: var(--bg-card); border-right: 1px solid var(--border-color); padding: 1.5rem 0; z-index: 1000; overflow-y: auto; }
+        .sidebar-brand { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1rem; }
+        .sidebar-brand h4 { font-size: 1.3rem; font-weight: 700; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 0; }
+        .sidebar-brand small { color: var(--text-muted); font-size: 0.75rem; }
+        .sidebar-nav { list-style: none; padding: 0; margin: 0; }
+        .sidebar-nav li { margin: 0.25rem 0.75rem; }
+        .sidebar-nav a { display: flex; align-items: center; padding: 0.75rem 1rem; color: var(--text-secondary); text-decoration: none; border-radius: var(--radius-sm); transition: var(--transition); font-weight: 500; font-size: 0.9rem; }
+        .sidebar-nav a:hover, .sidebar-nav a.active { background: rgba(230, 57, 70, 0.1); color: var(--primary); }
+        .sidebar-nav a .nav-icon { width: 24px; margin-right: 12px; text-align: center; font-size: 1.1rem; }
+        .main-content { margin-left: 260px; padding: 2rem; min-height: 100vh; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--gradient-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; }
+        .notif-card { border-left: 4px solid; padding: 1rem 1.25rem; margin-bottom: 0.75rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; background: rgba(255,255,255,0.02); }
+        .notif-card.waiter { border-color: var(--info); }
+        .notif-card.manager { border-color: var(--danger); }
+        .notif-card.kitchen { border-color: var(--warning); }
+        .notif-card.allergy { border-color: var(--warning-dark); }
+        @media (max-width: 992px) { .sidebar { display: none; } .main-content { margin-left: 0; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-brand"><h4>🍽️ BitePlate</h4><small>Restaurant Management</small></div>
+        <ul class="sidebar-nav">
+            <li><a href="{% url 'dashboard' %}"><span class="nav-icon">📊</span> Dashboard</a></li>
+            {% if perms.view_tables %}<li><a href="{% url 'tables' %}"><span class="nav-icon">🪑</span> Tables</a></li>{% endif %}
+            {% if perms.take_orders %}<li><a href="{% url 'orders' %}"><span class="nav-icon">📋</span> Orders</a></li>{% endif %}
+            {% if perms.view_kitchen_queue %}<li><a href="{% url 'kitchen' %}"><span class="nav-icon">👨‍🍳</span> Kitchen</a></li>{% endif %}
+            {% if perms.view_bills %}<li><a href="{% url 'billing' %}"><span class="nav-icon">💰</span> Billing</a></li>{% endif %}
+            {% if perms.view_reports %}<li><a href="{% url 'history' %}"><span class="nav-icon">📈</span> History</a></li>{% endif %}
+            <li><a href="{% url 'reservations' %}"><span class="nav-icon">📅</span> Reservations</a></li>
+            {% if perms.manage_staff %}<li><a href="{% url 'staff' %}"><span class="nav-icon">👥</span> Staff</a></li>{% endif %}
+            {% if perms.view_kitchen_queue %}<li><a href="{% url 'alerts' %}" class="active"><span class="nav-icon">🔔</span> Alerts</a></li>{% endif %}
+            <li style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);"><a href="{% url 'logout' %}" style="color: var(--danger);"><span class="nav-icon">🚪</span> Logout</a></li>
+        </ul>
+    </aside>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <div><h2 class="mb-1">🔔 Alerts</h2><p class="text-muted mb-0">Observer Pattern - Real-time notifications</p></div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="text-end"><div class="fw-semibold">{{ user.name }}</div><small class="text-muted">{{ user.role }}</small></div>
+                <div class="user-avatar">{{ user.name|slice:":1"|upper }}</div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card mb-4">
+                    <div class="card-header"><h5 class="mb-0">📩 Waiter Notifications</h5></div>
+                    <div class="card-body">
+                        {% if alerts.waiter %}
+                        {% for msg in alerts.waiter %}
+                        <div class="notif-card waiter">{{ msg }}</div>
+                        {% endfor %}
+                        {% else %}
+                        <p class="text-muted text-center">No notifications</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h5 class="mb-0">🚨 Manager Alerts</h5></div>
+                    <div class="card-body">
+                        {% if alerts.manager %}
+                        {% for msg in alerts.manager %}
+                        <div class="notif-card manager">{{ msg }}</div>
+                        {% endfor %}
+                        {% else %}
+                        <p class="text-muted text-center">No alerts</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card mb-4">
+                    <div class="card-header"><h5 class="mb-0">👨‍🍳 Kitchen Display</h5></div>
+                    <div class="card-body">
+                        {% if alerts.kitchen %}
+                        {% for order in alerts.kitchen %}
+                        <div class="notif-card kitchen">
+                            <strong>Order {{ order.order_id }}</strong> - Table {{ order.table_number }}<br>
+                            Status: {{ order.status }}<br>
+                            Items: {{ order.items|join:", " }}
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <p class="text-muted text-center">No orders</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h5 class="mb-0">⚠️ Allergy Alerts</h5></div>
+                    <div class="card-body">
+                        {% if alerts.allergy %}
+                        {% for msg in alerts.allergy %}
+                        <div class="notif-card allergy">{{ msg }}</div>
+                        {% endfor %}
+                        {% else %}
+                        <p class="text-muted text-center">No allergy alerts</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-4">
+            <strong>Observer Pattern:</strong> Real-time notifications, Decoupled publishers/subscribers, Multiple observer types
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
